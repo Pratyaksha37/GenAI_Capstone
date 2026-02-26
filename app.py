@@ -2,73 +2,91 @@ import streamlit as st
 import numpy as np
 import joblib
 import pandas as pd
+import os
 
-# PART B - LOAD MODEL
+# PART B - LOAD MODEL SAFELY
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model_path = os.path.join(BASE_DIR, "model.joblib")
+scaler_path = os.path.join(BASE_DIR, "scaler.joblib")
+
 try:
-    scaler = joblib.load("scaler.joblib")
-    model = joblib.load("model.joblib")
-except FileNotFoundError:
-    st.error("Model files not found. Please run train_model.py first.")
+    scaler = joblib.load(scaler_path)
+    model = joblib.load(model_path)
+except Exception as e:
+    st.error(f"Error loading model: {e}")
     st.stop()
+
 
 # PART C - CREATE PREDICTION FUNCTION
 def predict_price(latitude, longitude, bedrooms, bathrooms, floorAreaSqM, livingRooms, tenure, property_type):
+
     # Convert tenure
     tenure_leasehold = 1 if tenure == "LEASEHOLD" else 0
-    
+
     # Convert propertyType into dummy variables
     prop_detached = 1 if property_type == "DETACHED" else 0
     prop_semi_detached = 1 if property_type == "SEMI_DETACHED" else 0
     prop_terraced = 1 if property_type == "TERRACED" else 0
-    
-    # Create numpy array
-    # Order matched exactly what train_model.py generated after pd.get_dummies
+
+    # Create input array
     input_data = np.array([[
-        latitude, 
-        longitude, 
-        bedrooms, 
-        bathrooms, 
-        floorAreaSqM, 
-        livingRooms, 
+        latitude,
+        longitude,
+        bedrooms,
+        bathrooms,
+        floorAreaSqM,
+        livingRooms,
         tenure_leasehold,
         prop_detached,
         prop_semi_detached,
         prop_terraced
     ]])
-    
+
     # Scale input
     input_scaled = scaler.transform(input_data)
-    
-    # Predict using model
-    pred_price_log = model.predict(input_scaled)
-    
-    # Convert back using np.exp()
-    final_price = np.exp(pred_price_log[0])
-    
+
+    # Predict log price
+    pred_log = model.predict(input_scaled)
+
+    # Convert back to real price
+    final_price = np.exp(pred_log[0])
+
     return final_price
 
-# PART D - CREATE USER INTERFACE
+
+# PART D - STREAMLIT UI
+
 st.title("Property Price Prediction App")
 st.header("Enter Property Details")
 
-# Numeric Inputs
 latitude = st.number_input("Latitude", value=51.50)
 longitude = st.number_input("Longitude", value=-0.12)
-bedrooms = st.number_input("Bedrooms", value=3, step=1)
-bathrooms = st.number_input("Bathrooms", value=2, step=1)
-floorAreaSqM = st.number_input("Floor Area (SqM)", value=100.0)
-livingRooms = st.number_input("Living Rooms", value=1, step=1)
 
-# Dropdown Inputs
+bedrooms = st.number_input("Bedrooms", min_value=0, step=1)
+bathrooms = st.number_input("Bathrooms", min_value=0, step=1)
+
+floorAreaSqM = st.number_input("Floor Area (SqM)", min_value=0.0)
+livingRooms = st.number_input("Living Rooms", min_value=0, step=1)
+
 tenure = st.selectbox("Tenure", ["FREEHOLD", "LEASEHOLD"])
-property_type = st.selectbox("Property Type", ["FLAT", "DETACHED", "SEMI_DETACHED", "TERRACED"])
 
-# Prediction Button
+property_type = st.selectbox(
+    "Property Type",
+    ["FLAT", "DETACHED", "SEMI_DETACHED", "TERRACED"]
+)
+
 if st.button("Predict Price"):
-    predicted_value = predict_price(
-        latitude, longitude, bedrooms, bathrooms, 
-        floorAreaSqM, livingRooms, tenure, property_type
+
+    price = predict_price(
+        latitude,
+        longitude,
+        bedrooms,
+        bathrooms,
+        floorAreaSqM,
+        livingRooms,
+        tenure,
+        property_type
     )
-    
-    # Show Result
-    st.success(f"Predicted Property Price: £{predicted_value:,.2f}")
+
+    st.success(f"Predicted Property Price: £{price:,.2f}")
