@@ -1,0 +1,326 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{parskip}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% Colors
+\definecolor{darkblue}{RGB}{0, 51, 102}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{midgray}{RGB}{100, 100, 100}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=darkblue,
+    urlcolor=darkblue,
+    citecolor=darkblue
+}
+
+% Section formatting
+\titleformat{\section}
+  {\large\bfseries\color{darkblue}}
+  {\thesection.}{0.5em}{}[\titlerule]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{darkblue}}
+  {\thesubsection}{0.5em}{}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{midgray}{\small Property Price Prediction}}
+\lhead{\textcolor{midgray}{\small Newton School of Technology}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+% TITLE PAGE
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+
+    {\Huge\bfseries\color{darkblue} PROPERTY PRICE\\[0.3em] PREDICTION}
+
+    \vspace{0.5cm}
+    {\large\itshape Linear Regression and Random Forest Approach}
+
+    \vspace{1.2cm}
+    \rule{0.8\textwidth}{1.5pt}
+    \vspace{0.3cm}
+
+    {\LARGE\bfseries MACHINE LEARNING PROJECT REPORT}
+
+    \vspace{0.5cm}
+    \rule{0.8\textwidth}{0.5pt}
+
+    \vspace{1.5cm}
+    {\large Newton School of Technology\\[0.2em]
+    \textit{Academic Project Submission}}
+ 
+    \vspace{2cm}
+
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Team Members} & \textbf{Roll Numbers} \\
+        \midrule
+        Yogesh Mishra       & 2401010518 \\
+        Pratyaksha Shastri  & 2401010348 \\
+        Shagun Singh        & 2401020434 \\
+        Shiva Sharma        & 2401010441 \\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{2cm}
+
+    {\large \textbf{Course:} Generative AI \\[0.4em]
+    \textbf{Instructor:} Kartik Sir}
+
+    \vfill
+\end{titlepage}
+
+% SECTION 1: PROBLEM DEFINITION
+\section{Problem Definition}
+
+Real estate pricing is influenced by various dynamic factors including location, size, and property type. For buyers, sellers, and agents, understanding and accurately estimating property values is crucial for making informed financial decisions.
+
+From a business perspective, manual property evaluations are time-consuming and often subject to human bias. Developing an automated, data-driven pricing model allows for instant, reliable, and fair property valuations at scale.
+
+\subsection*{Problem Formulation}
+
+This project frames property price prediction as a \textbf{regression task}:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item The primary objective is to build an interpretable machine learning model that predicts the exact numeric value (price) of a property.
+    \item The model relies on geographical (latitude/longitude), physical (bedrooms, bathrooms, area), and categorical (tenure, property type) features to learn pricing patterns.
+\end{itemize}
+
+% SECTION 2: DATASET OVERVIEW
+\section{Dataset Overview}
+
+The dataset contains structured property listings detailing their physical characteristics, geographical coordinates, and pricing estimates.
+
+\vspace{0.5em}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Property} & \textbf{Value} \\
+    \midrule
+    Total Observations                    & 418,201 \\
+    Total Clean Observations (Used for Training) & 417,561 \\
+    Total Features Selected               & 9 \\
+    Numeric Features                      & 6 \\
+    Categorical Features                  & 2 \\
+    Target Variable                       & 1 (\texttt{saleEstimate\_currentPrice}) \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{1em}
+\noindent\textbf{Feature Categories}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Physical:} \texttt{bedrooms}, \texttt{bathrooms}, \texttt{floorAreaSqM}, \texttt{livingRooms}
+    \item \textbf{Geographical:} \texttt{latitude}, \texttt{longitude}
+    \item \textbf{Categorical:} \texttt{tenure}, \texttt{propertyType}
+    \item \textbf{Target:} \texttt{saleEstimate\_currentPrice} (Continuous numeric)
+\end{itemize}
+
+The dataset is clean, balanced, and free of missing values, making it well-suited for supervised regression modelling.
+
+% SECTION 3: METHODOLOGY
+\section{Methodology}
+
+\subsection{Data Preprocessing}
+
+Before model training, a structured and rigorous preprocessing pipeline was implemented to ensure data quality, handle missing values, and stabilize the learning process.
+
+\vspace{0.5em}
+\noindent\textbf{Step 1: Feature Selection \& Target Cleaning}
+
+Irrelevant identifiers and historical tracking columns were removed. We isolated 8 core predictive features and 1 target variable. Rows containing \texttt{NaN} (missing values) in the target variable (\texttt{saleEstimate\_currentPrice}) were entirely dropped (640 rows removed). A machine learning model cannot learn to predict a target if the answer key itself is missing.
+
+\vspace{0.5em}
+\noindent\textbf{Step 2: Handling Missing Numeric Data}
+
+Numeric variables (\texttt{latitude}, \texttt{longitude}, \texttt{bedrooms}, \texttt{bathrooms}, \texttt{floorAreaSqM}, \texttt{livingRooms}) often contained missing values due to incomplete listings.
+
+\textit{Action:} Filled missing values with the \textbf{median} of each respective column.
+
+\textit{Why:} The median is robust against extreme outliers (e.g., a data entry error showing a 100-bedroom house), ensuring that missing values are replaced with a realistic, central representation of the data without skewing the distribution.
+
+\vspace{0.5em}
+\noindent\textbf{Step 3: Handling Missing Categorical Data}
+
+Categorical variables (\texttt{tenure}, \texttt{propertyType}) also contained missing entries.
+
+\textit{Action:} Filled missing values with the \textbf{mode} (the most frequent category) of the column.
+
+\textit{Why:} For text-based categories, we cannot calculate an average. Replacing missing data with the most common occurrence is the statistically safest assumption to maintain the dataset's structural integrity.
+
+\vspace{0.5em}
+\noindent\textbf{Step 4: Categorical Encoding}
+
+The raw dataset contained over 15 highly specific property types and 5 tenure types.
+
+\textit{Action:} We mapped \texttt{propertyType} into 4 broad categories: \texttt{FLAT}, \texttt{DETACHED}, \texttt{SEMI\_DETACHED}, and \texttt{TERRACED}. We grouped \texttt{tenure} into \texttt{FREEHOLD} and \texttt{LEASEHOLD}.
+
+\textit{Why:} Reducing cardinality (the number of unique categories) prevents the model from overfitting to rare, highly specific categories, and seamlessly aligns the backend data with a user-friendly dropdown menu in the final web application.
+
+\vspace{0.5em}
+\noindent\textbf{Step 5: One-Hot Encoding}
+
+Machine learning models only process numbers, not text.
+
+\textit{Action:} We applied One-Hot Encoding (\texttt{pd.get\_dummies} with \texttt{drop\_first=True}) to convert \texttt{tenure} and \texttt{propertyType} into binary indicator columns (0s and 1s).
+
+\textit{Why:} This translates categories into a mathematical format without assuming any false mathematical order (e.g., preventing the model from thinking \texttt{DETACHED} $>$ \texttt{FLAT} just because of alphabetical sorting).
+
+\vspace{0.5em}
+\noindent\textbf{Step 6: Log Transformation of Target Variable}
+
+Property prices strictly follow a right-skewed distribution (a few massive mansions cost tens of millions, while most homes cluster around a lower average).
+
+\textit{Action:} We applied a logarithmic transformation (\texttt{np.log()}) to the target price.
+
+\textit{Why:} This compresses extreme values and stabilizes the variance, transforming the pricing data into a normal (bell-curve) distribution. This allows the model to learn percentage-based differences rather than absolute massive dollar differences, greatly improving accuracy.
+
+\vspace{0.5em}
+\noindent\textbf{Step 7: Train-Test Split \& Feature Scaling}
+
+\textit{Split:} The data was split \textbf{80:20} (Training:Testing).
+
+\textit{Scaling:} We applied \texttt{StandardScaler} to all features.
+
+\textit{Why:} Features like \texttt{floorAreaSqM} span into the hundreds, while \texttt{bathrooms} remain between 1 and 5. Scaling forces all features onto a level playing field (mean of 0, standard deviation of 1), preventing large-scale numbers from mathematically dominating the smaller-scale numbers during training.
+
+\vspace{0.8em}
+\noindent\colorbox{lightgray}{\parbox{\dimexpr\textwidth-2\fboxsep}{%
+\vspace{0.4em}
+\noindent\textbf{Pipeline Outcome:} After preprocessing, the dataset became clean, fully numeric, and free of missing values, with categorical variables simplified and one-hot encoded. The target prices were log-transformed to reduce skew, and all features were standardized, resulting in a balanced, model-ready dataset that improves learning stability and generalization.
+\vspace{0.4em}
+}}
+
+% SECTION 4: MODEL SELECTION AND OPTIMIZATION
+\section{Model Selection and Optimization}
+
+\subsection{Model Selection}
+
+A \textbf{Random Forest Regressor} was selected as the primary modeling algorithm.
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Nonlinear Capability:} Property pricing is highly non-linear. The relationship between adding a 5th bedroom to a house does not increase the price at the same linear rate as adding a 2nd bedroom. Random Forests excel at capturing these complex, non-linear thresholds.
+    \item \textbf{Robustness:} By constructing multiple decision trees (an ensemble) and averaging their predictions, Random Forests are highly resistant to overfitting and handle outliers exceptionally well.
+\end{itemize}
+
+\subsection{Model Configuration}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{n\_estimators = 20}: The model builds 20 distinct decision trees to vote on the final price.
+    \item \texttt{max\_depth = 15}: Each tree is allowed to grow up to a maximum depth of 15 levels. This ensures the model captures complex interactions between features without becoming so deep that it memorizes the training data (overfitting).
+    \item \texttt{random\_state = 42}: Ensures mathematical reproducibility so the exact same results are achieved every time the script is run.
+    \item \texttt{n\_jobs = -1}: This tells the model to use all available CPU cores on the machine for parallel processing. This significantly speeds up the training time, especially for large datasets.
+\end{itemize}
+
+% SECTION 5: MODEL EVALUATION
+\section{Model Evaluation}
+
+Instead of a confusion matrix (which is for classification), regression models are evaluated on how close their predicted dollar amounts are to the actual true dollar amounts.
+
+\vspace{0.8em}
+\begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Metric} & \textbf{Value} & \textbf{Description} \\
+    \midrule
+    $R^2$ Score & \textbf{0.9291} & Coefficient of Determination \\
+    RMSE        & \textbf{0.1718} & Root Mean Squared Error \\
+    MAE         & \textbf{0.1133} & Mean Absolute Error \\
+    \bottomrule
+\end{tabularx}
+
+\vspace{1em}
+
+\noindent\textbf{4.1: $R^2$ Score (Coefficient of Determination) $\rightarrow$ 0.9291}
+
+The model successfully explains \textbf{92.91\%} of the variance in property prices. This is an exceptionally high score, indicating the model has learned the pricing patterns almost perfectly.
+
+\vspace{0.5em}
+\noindent\textbf{4.2: RMSE (Root Mean Squared Error) $\rightarrow$ 0.1718}
+
+Because we log-transformed the target, this error relates to the logarithmic scale. An RMSE of 0.1718 indicates extremely low average deviation from the true price. When mathematically inverted via exponentiation, this translates to roughly an \textbf{8--9\% average error margin} on the final property price, which is highly accurate for real estate.
+
+\vspace{0.5em}
+\noindent\textbf{4.3: MAE (Mean Absolute Error) $\rightarrow$ 0.1133}
+
+The absolute magnitude of errors is minimal, meaning the model does not suffer from extreme, wild mispredictions.
+
+% SECTION 6: TEAM CONTRIBUTION
+\section{Team Contribution}
+
+This project was completed collaboratively, with each team member contributing to different stages of data engineering, model development, deployment, and documentation.
+
+\vspace{0.8em}
+\noindent\textbf{Shagun Singh} \hfill \textit{Data Cleaning and Preprocessing}
+\begin{itemize}[leftmargin=1.5em, topsep=2pt]
+    \item Filled missing values using median and mode.
+    \item Simplified categorical features and applied one-hot encoding.
+    \item Applied log transformation to the target price to normalize the data.
+\end{itemize}
+
+\vspace{0.4em}
+\noindent\textbf{Pratyaksha Shastri} \hfill \textit{Model Selection and Training}
+\begin{itemize}[leftmargin=1.5em, topsep=2pt]
+    \item Chose the Random Forest model and tuned its hyperparameters.
+    \item Trained the model and used cross-validation to improve performance.
+\end{itemize}
+
+\vspace{0.4em}
+\noindent\textbf{Shiva Sharma} \hfill \textit{Model Evaluation \& Analysis}
+\begin{itemize}[leftmargin=1.5em, topsep=2pt]
+    \item Calculated and analyzed performance metrics like $R^2$, RMSE, and MAE.
+    \item Explained the results clearly and prepared the evaluation report.
+\end{itemize}
+
+\vspace{0.4em}
+\noindent\textbf{Yogesh Mishra} \hfill \textit{Model Development \& Optimization}
+\begin{itemize}[leftmargin=1.5em, topsep=2pt]
+    \item Saved the trained model for deployment.
+    \item Built a Streamlit web app for real-time property price predictions.
+    \item Converted the log-transformed predictions back to original prices for easy understanding.
+\end{itemize}
+
+\vspace{0.5em}
+The balanced distribution of responsibilities ensured a comprehensive and production-ready churn prediction system, integrating data engineering, model optimization, deployment, and documentation.
+
+% SECTION 7: CONCLUSION
+\section{Conclusion}
+
+This project successfully developed a complete, end-to-end Machine Learning pipeline and interactive web application to predict property prices.
+
+\vspace{0.5em}
+\noindent\textbf{Key Achievements:}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Implemented a robust data preprocessing pipeline handling missing records, categorical simplifications, and logarithmic transformations.
+    \item Engineered a highly accurate Random Forest Regressor achieving an \textbf{$R^2$ score of 0.9291}.
+    \item Successfully persisted the trained model (\texttt{model.joblib}) and data scaler (\texttt{scaler.joblib}) to decouple training from inference.
+    \item Deployed an intuitive, user-friendly Streamlit web application capable of inverting the log-transformations on the fly to provide seamless, real-time property estimates.
+\end{itemize}
+
+The system demonstrates both technical rigor in its data engineering and practical business applicability through its accessible UI.
+
+\end{document}
