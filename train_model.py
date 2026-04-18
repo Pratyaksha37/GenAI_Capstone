@@ -16,13 +16,20 @@ df = pd.read_csv('data/kaggle_london_house_price_data.csv')
 important_columns = [
     'latitude', 'longitude', 'bedrooms', 'bathrooms', 
     'floorAreaSqM', 'livingRooms', 'tenure', 'propertyType', 
-    'saleEstimate_currentPrice'
+    'currentEnergyRating', 'saleEstimate_currentPrice'
 ]
 df = df[important_columns]
 
-
 # Drop rows where target is missing
 df = df.dropna(subset=['saleEstimate_currentPrice'])
+
+def haversine_vectorize(lat1, lon1, lat2, lon2):
+    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = np.sin(dlat/2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2.0)**2
+    return 6371 * 2 * np.arcsin(np.sqrt(a))
+
 
 # 2. Data Cleaning - Missing Values
 print("Cleaning data...")
@@ -30,6 +37,17 @@ print("Cleaning data...")
 num_cols = ['latitude', 'longitude', 'bedrooms', 'bathrooms', 'floorAreaSqM', 'livingRooms']
 for col in num_cols:
     df[col] = df[col].fillna(df[col].median())
+
+# --- SAFELY ENGINEERED FEATURES ---
+print("Extracting safe engineered features...")
+energy_map = {'A':7, 'B':6, 'C':5, 'D':4, 'E':3, 'F':2, 'G':1}
+df['energy_rating_score'] = df['currentEnergyRating'].map(energy_map).fillna(4) 
+df['total_rooms'] = df['bedrooms'] + df['bathrooms'] + df['livingRooms']
+df['sqm_per_room'] = df['floorAreaSqM'] / df['total_rooms'].replace(0, 1)
+df['distance_to_center'] = haversine_vectorize(df['latitude'], df['longitude'], 51.5074, -0.1278)
+
+# Drop intermediary columns
+df = df.drop(columns=['currentEnergyRating', 'total_rooms'])
 
 # Categorical columns
 cat_cols = ['tenure', 'propertyType']
@@ -76,7 +94,7 @@ X_test_scaled = scaler.transform(X_test)
 
 # 7. Train Model
 print("Training model (this might take a moment)...")
-model = RandomForestRegressor(n_estimators=50,max_depth=15,random_state=42,n_jobs=-1)
+model = RandomForestRegressor(n_estimators=20,max_depth=15,random_state=42,n_jobs=-1)
 model.fit(X_train_scaled, y_train)
 
 # 8. Evaluate Model

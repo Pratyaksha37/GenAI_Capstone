@@ -5,3 +5,9 @@ scikit-learn
 joblib
 matplotlib
 seaborn
+langgraph
+groq
+python-dotenv
+langchain
+langchain-core
+langchain-community

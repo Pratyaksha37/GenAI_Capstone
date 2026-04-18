@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Data
+# Excluding the massive dataset file to prevent GitHub upload issues
+data/kaggle_london_house_price_data.csv
+
+# Environment Secrets
+.env
+
+# OS-specific
+.DS_Store
+
+# Streamlit logs
+.streamlit/
