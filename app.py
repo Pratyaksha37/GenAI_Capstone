@@ -8,7 +8,6 @@ from agent import run_agent
 
 st.set_page_config(page_title="🏠 Property Advisor AI", page_icon="🏠", layout="wide")
 
-# --- Custom CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
