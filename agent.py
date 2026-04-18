@@ -114,3 +114,5 @@ def run_agent(input_data):
     agent = build_agent()
     initial_state = {"input": input_data, "price": 0.0, "market_data": "", "advice": ""}
     return agent.invoke(initial_state)
+
+#new commit
