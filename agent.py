@@ -69,8 +69,6 @@ Provide your analysis in EXACTLY this format:
 CRITICAL INSTRUCTION: Keep your response concise and practical. Base your advice ONLY on the market insights provided above. If the provided market insights are insufficient or do not contain relevant facts, clearly state your uncertainty. Do NOT guess, assume, or hallucinate information not present in the market insights."""
 
     try:
-        # Securely fetch the API key from the environment variable (or Streamlit Secrets)
-        # On Streamlit Cloud, you configure this in your App Settings > Secrets
         api_key = os.environ.get("GROQ_API_KEY") or getattr(st, 'secrets', {}).get("GROQ_API_KEY")
         if not api_key:
             return {"advice": "⚠️ Error: GROQ_API_KEY is missing. Please check your .env file or Streamlit Secrets."}
