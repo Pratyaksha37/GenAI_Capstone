@@ -1,84 +1,68 @@
-# Property Price Prediction: Machine Learning Project
+# 🏠 Agentic Property Advisor: AI-Powered Real Estate Assistant
 
-This project implements a robust machine learning pipeline to predict property prices using **Random Forest Regression**. It features a comprehensive data preprocessing workflow and an interactive **Streamlit** web application for real-time valuations.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge.svg)](https://your-app-link.streamlit.app/)
 
-## 📌 Problem Definition
-
-Real estate pricing is driven by dynamic factors like location, size, and property type. This project frames property price prediction as a **regression task**, aiming to provide automated, data-driven valuations to eliminate human bias and improve efficiency.
-
-## 📊 Dataset Overview
-
-The model is trained on a dataset of property listings with the following characteristics:
-
-- **Total Clean Observations**: 417,561
-- **Features Selected**: 9 (Physical, Geographical, and Categorical)
-- **Target Variable**: `saleEstimate_currentPrice` (Continuous numeric)
-
-### Feature Categories:
-
-- **Physical**: Bedrooms, bathrooms, floor area (sqm), living rooms.
-- **Geographical**: Latitude, longitude.
-- **Categorical**: Tenure (Freehold/Leasehold), Property Type (Flat, Detached, Semi-Detached, Terraced).
-
-## ⚙️ Methodology & Preprocessing
-
-A rigorous preprocessing pipeline was implemented to ensure data quality:
-
-1. **Missing Data**: Handled using **Median** (numeric) and **Mode** (categorical) imputation.
-2. **Feature Engineering**: Simplified property types and tenures to reduce cardinality and prevent overfitting.
-3. **Categorical Encoding**: Applied **One-Hot Encoding** for model compatibility.
-4. **Target Transformation**: Applied **Log Transformation** (`np.log`) to the target price to normalize the right-skewed distribution.
-5. **Scaling**: Used `StandardScaler` to ensure all features contribute equally to the model.
-
-## 🤖 Model selection & Performance
-
-A **Random Forest Regressor** was chosen for its ability to capture non-linear relationships and its robustness against overfitting.
-
-### Configuration:
-
-- `n_estimators`: 20
-- `max_depth`: 15
-- `n_jobs`: -1 (Parallel processing)
-
-### Evaluation Results:
-
-| Metric              | Value            | Description                      |
-| :------------------ | :--------------- | :------------------------------- |
-| **R² Score** | **0.9291** | Explains ~93% of price variance  |
-| **RMSE**      | **0.1718** | ~8-9% average error margin       |
-| **MAE**       | **0.1133** | Minimal absolute error magnitude |
-
-## 🚀 Getting Started
-
-### 1. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Download Dataset
-
-Download the [Kaggle House Price Data](https://www.kaggle.com/datasets/jakewright/house-price-data) and place the CSV file in the `data/` folder.
-
-### 3. Train the Model
-
-```bash
-python train_model.py
-```
-
-### 4. Run the Web App
-
-```bash
-streamlit run app.py
-```
-
-## 👥 Team Contributions
-
-- **Shagun Singh**: Data Cleaning, Preprocessing, and Feature Engineering.
-- **Pratyaksha Shastri**: Model Selection, Hyperparameter Tuning, and Training.
-- **Shiva Sharma**: Model Evaluation, Performance Analysis and Reporting.
-- **Yogesh Mishra**: Web App Development (Streamlit), Model Deployment, and Optimization.
+A comprehensive **Agentic AI** system that combines Machine Learning (ML) for price prediction with Generative AI (GenAI) and Retrieval-Augmented Generation (RAG) to provide professional real-world property investment advice.
 
 ---
 
-*Developed as part of the **Generative AI** course at **Newton School of Technology**.*
+## 🚀 Overview
+
+The **Agentic Property Advisor** is not just a calculator; it's a decision-support agent. It uses a hybrid architecture:
+1.  **ML Layer**: A Random Forest Regressor predicts the numerical market value of a property based on physical and geographical features.
+2.  **RAG Layer**: A specialized retriever extracts relevant market trends, investment data, and risk factors from a curated knowledge base.
+3.  **Agentic Layer**: A **LangGraph-driven agent** synthesizes the ML prediction and RAG context using **Llama 3 (via Groq)** to generate a structured, professional advisory report.
+
+## 🧠 System Architecture
+
+The application follows a structured **Directed Acyclic Graph (DAG)** workflow:
+- **Predict Node**: Executes the ML model (`RandomForestRegressor`) to estimate the base property value.
+- **Retrieve Node**: Performs a RAG lookup in `market_trends.txt` based on the property's specific attributes.
+- **Advise Node**: Triggers the LLM to analyze the predicted price against the market data to generate insights on investment suitability and risk.
+
+## 🛠️ Key Features
+
+- **Agentic Workflow**: Managed by `LangGraph` for stateful transitions between prediction and synthesis.
+- **High-Performance LLM**: Powered by **Groq LPU** (Low Latency Processing Unit) using `llama-3-70b-versatile`.
+- **Intelligent RAG**: Context-aware retrieval for hyper-local London market insights.
+- **Professional Analytics**: Real-time calculation of **Price per SqM** and investment benchmarking.
+- **Rich UI**: Interactive Streamlit dashboard with modern CSS and real-time process tracking.
+
+## 📊 Model Performance
+
+The underlying ML model is a Random Forest Regressor trained on 400k+ London property listings:
+- **R² Score**: 0.9418 (explains ~94% of price variance)
+- **MAE**: 0.10
+- **Features**: Geospatial (Lat/Lon), Physical (Rooms/Sqm), Energy Rating (A-G), and Tenure.
+
+## ⚙️ Setup & Installation
+
+### 1. Requirements
+- Python 3.9+
+- Groq API Key (Get one free at [console.groq.com](https://console.groq.com/))
+
+### 2. Installation
+```bash
+git clone https://github.com/your-username/property-agentic-advisor.git
+cd property-agentic-advisor
+pip install -r requirements.txt
+```
+
+### 3. Environment Variables
+Create a `.env` file in the root directory:
+```env
+GROQ_API_KEY=your_actual_key_here
+```
+
+### 4. Running the App
+```bash
+python3 -m streamlit run app.py
+```
+
+## 🎥 Demonstration
+
+[Link to Project Video] - *Walkthrough of the agentic workflow and feature engineering.*
+
+---
+
+*Developed for the **Generative AI & Agentic AI Capstone** at **Newton School of Technology**.*
