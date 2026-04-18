@@ -58,7 +58,7 @@ Market Insights (from knowledge base):
 Provide your analysis in EXACTLY this format:
 
 **Price Evaluation:**
-[State whether the predicted price seems cheap, fair, or expensive for this type of property, and explain why]
+[State if the price aligns with the location and features provided. Do not default to 'expensive' unless the price significantly exceeds typical market expectations for London."]
 
 **Investment Advice:**
 [Provide 2-3 specific investment recommendations based on the property details and market data]
